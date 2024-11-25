@@ -93,6 +93,12 @@ class Zombie:
         self.x += distance * math.cos(self.dir)
         self.y += distance * math.sin(self.dir)
         pass
+    def move_slightly_to_minus(self, tx, ty):
+        self.dir = math.atan2(self.y - ty, self.x - tx)
+        distance = RUN_SPEED_PPS * game_framework.frame_time
+        self.x += distance * math.cos(self.dir)
+        self.y += distance * math.sin(self.dir)
+        pass
 
     def move_to(self, r=0.5):
         self.state = 'Walk'
@@ -115,7 +121,11 @@ class Zombie:
 
     def move_to_boy(self, r=0.5):
         self.state = 'Walk'
-        self.move_slightly_to(play_mode.boy.x,play_mode.boy.y)
+        if self.ball_count >= play_mode.boy.ball_count:
+            self.move_slightly_to(play_mode.boy.x,play_mode.boy.y)
+        elif self.ball_count < play_mode.boy.ball_count:
+            self.move_slightly_to_minus(play_mode.boy.x, play_mode.boy.y)
+
         if self.distance_less_than(play_mode.boy.x, play_mode.boy.y,self.x,self.y,r):
             return BehaviorTree.SUCCESS
         else:
@@ -142,6 +152,6 @@ class Zombie:
 
         root = chase_or_flee = Selector('추적 또는 배회', chase_boy,wander)
 
-        a5 = Action('순찰 위치 가져오기', self.get_patrol_location)
-        root = patrol = Sequence('순찰', a5, a2)
+        # a5 = Action('순찰 위치 가져오기', self.get_patrol_location)
+        # root = patrol = Sequence('순찰', a5, a2)
         self.bt = BehaviorTree(root)
